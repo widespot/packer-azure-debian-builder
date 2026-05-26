@@ -3,25 +3,26 @@ set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 
-#cat <<'EOF' | sudo tee /etc/apt/sources.list.d/bookworm-backports.sources
-#Types: deb
-#URIs: http://deb.debian.org/debian
-#Suites: bookworm-backports
-#Components: main contrib
-#Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
-#EOF
+#FASTTRACK_KEYRING="/usr/share/keyrings/fasttrack-archive-keyring.gpg"
+# Debian 12:
+FASTTRACK_KEYRING="/etc/apt/trusted.gpg.d/fasttrack-archive-keyring.gpg"
 
+echo "==== apt-get update ..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get update
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y fasttrack-archive-keyring
-
+echo "==== Download and setup Fasttrack trusted registry key ..."
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -u fasttrack-archive-keyring
+sudo ls -la /etc/apt/trusted.gpg.d/
+echo "==== Record Fasttrack Debian package registry ..."
 echo "Types: deb
-URIs: https://fasttrack.debian.net/debian-fasttrack
+URIs: http://fasttrack.debian.net/debian-fasttrack
 Suites: bookworm-fasttrack bookworm-backports-staging
 Components: main contrib
-Signed-By: /usr/share/keyrings/fasttrack-archive-keyring.gpg" | sudo tee /etc/apt/sources.list.d/fasttrack.sources
-
+Signed-By: ${FASTTRACK_KEYRING}" | sudo tee /etc/apt/sources.list.d/fasttrack.sources
+echo "==== Re-update packages list ..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get update
+echo "==== Install linux headers for both '$(uname -r)' and 'cloud-amd64' ..."
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "linux-headers-$(uname -r)" linux-headers-cloud-amd64
+echo "==== Install VirtualBox and -dkms related package"
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y virtualbox-dkms virtualbox
 
 # Grant access to vboxusers
