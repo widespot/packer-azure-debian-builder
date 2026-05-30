@@ -47,3 +47,41 @@ packer init .
 packer validate .
 packer build .
 ```
+
+## GitHub Actions + Public Azure Image Gallery
+
+This repo includes:
+- GitHub Actions workflow: `.github/workflows/build-image-release.yml`
+- Terraform bootstrap: `terraform/`
+
+The workflow builds a managed image with Packer, publishes it as a version in Azure Compute Gallery, then creates a GitHub Release with a single asset file: `image-link.txt`.
+
+### 1) Bootstrap Azure resources
+```shell
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform apply
+```
+
+### 2) Configure GitHub repository secrets
+- `AZURE_CLIENT_ID`
+- `AZURE_TENANT_ID`
+
+Use an Azure AD application/federated credential for GitHub OIDC.
+
+### 3) Configure GitHub repository variables
+- `AZURE_SUBSCRIPTION_ID`
+- `AZURE_RESOURCE_GROUP_NAME`
+- `AZURE_RESOURCE_GROUP_LOCATION`
+- `AZURE_MANAGED_IMAGE_NAME`
+- `AZURE_GALLERY_NAME`
+- `AZURE_GALLERY_IMAGE_NAME`
+
+You can set these from Terraform outputs.
+
+### 4) Run the workflow
+Manually run `Build Azure Image And Publish Release` with:
+- `image_version` (for example `1.0.0`)
+- `release_tag` (for example `v1.0.0`)
+- `release_name` (optional)

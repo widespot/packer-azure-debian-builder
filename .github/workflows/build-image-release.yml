@@ -1,0 +1,123 @@
+name: Build Azure Image And Publish Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_version:
+        description: "Gallery image version (SemVer format, e.g. 1.0.0)"
+        required: true
+      release_tag:
+        description: "Git tag for the GitHub release (e.g. v1.0.0)"
+        required: true
+      release_name:
+        description: "Release title"
+        required: false
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    env:
+      RESOURCE_GROUP_NAME: ${{ vars.AZURE_RESOURCE_GROUP_NAME }}
+      RESOURCE_GROUP_LOCATION: ${{ vars.AZURE_RESOURCE_GROUP_LOCATION }}
+      MANAGED_IMAGE_NAME: ${{ vars.AZURE_MANAGED_IMAGE_NAME }}
+      GALLERY_NAME: ${{ vars.AZURE_GALLERY_NAME }}
+      GALLERY_IMAGE_NAME: ${{ vars.AZURE_GALLERY_IMAGE_NAME }}
+      SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.SUBSCRIPTION_ID }}
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@v3
+
+      - name: Validate required variables
+        run: |
+          set -euo pipefail
+          for v in RESOURCE_GROUP_NAME RESOURCE_GROUP_LOCATION MANAGED_IMAGE_NAME GALLERY_NAME GALLERY_IMAGE_NAME SUBSCRIPTION_ID; do
+            if [ -z "${!v:-}" ]; then
+              echo "Missing required repository variable: $v" >&2
+              exit 1
+            fi
+          done
+
+      - name: Packer Init
+        run: packer init .
+
+      - name: Packer Validate
+        run: |
+          packer validate \
+            -var "subscription_id=${SUBSCRIPTION_ID}" \
+            -var "resource_group_name=${RESOURCE_GROUP_NAME}" \
+            -var "resource_group_location=${RESOURCE_GROUP_LOCATION}" \
+            -var "vm_image_name=${MANAGED_IMAGE_NAME}" \
+            .
+
+      - name: Packer Build
+        run: |
+          packer build \
+            -var "subscription_id=${SUBSCRIPTION_ID}" \
+            -var "resource_group_name=${RESOURCE_GROUP_NAME}" \
+            -var "resource_group_location=${RESOURCE_GROUP_LOCATION}" \
+            -var "vm_image_name=${MANAGED_IMAGE_NAME}" \
+            .
+
+      - name: Publish managed image to Compute Gallery
+        id: publish_gallery
+        run: |
+          set -euo pipefail
+          IMAGE_VERSION="${{ github.event.inputs.image_version }}"
+
+          MANAGED_IMAGE_ID="$(az image show \
+            --resource-group "${RESOURCE_GROUP_NAME}" \
+            --name "${MANAGED_IMAGE_NAME}" \
+            --query id -o tsv)"
+
+          az sig image-version create \
+            --resource-group "${RESOURCE_GROUP_NAME}" \
+            --gallery-name "${GALLERY_NAME}" \
+            --gallery-image-definition "${GALLERY_IMAGE_NAME}" \
+            --gallery-image-version "${IMAGE_VERSION}" \
+            --managed-image "${MANAGED_IMAGE_ID}" \
+            --target-regions "${RESOURCE_GROUP_LOCATION}" \
+            --replica-count 1
+
+          GALLERY_VERSION_ID="$(az sig image-version show \
+            --resource-group "${RESOURCE_GROUP_NAME}" \
+            --gallery-name "${GALLERY_NAME}" \
+            --gallery-image-definition "${GALLERY_IMAGE_NAME}" \
+            --gallery-image-version "${IMAGE_VERSION}" \
+            --query id -o tsv)"
+
+          echo "gallery_version_id=${GALLERY_VERSION_ID}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create release link asset
+        run: |
+          set -euo pipefail
+          IMAGE_VERSION="${{ github.event.inputs.image_version }}"
+          cat > image-link.txt <<EOF
+          Azure Compute Gallery Image Version
+          ID: ${{ steps.publish_gallery.outputs.gallery_version_id }}
+          Image: ${GALLERY_IMAGE_NAME}
+          Version: ${IMAGE_VERSION}
+          Resource Group: ${RESOURCE_GROUP_NAME}
+          Subscription: ${SUBSCRIPTION_ID}
+          EOF
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag }}
+          name: ${{ github.event.inputs.release_name || github.event.inputs.release_tag }}
+          files: image-link.txt
