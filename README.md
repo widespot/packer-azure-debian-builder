@@ -1,4 +1,4 @@
-# Packer Debian Builder with nested virtualization
+# Packer Debian Builder with nested virtualization (Docker, Qemu + VirtualBox)
 > Build VM image in ... an Azure Virtual Machine!
 
 This Packer template builds a Debian 12 Azure Virtual Machine designed to build other VM images
