@@ -69,8 +69,8 @@ sudo apt-get install -y \
   libsqlite3-dev libffi-dev liblzma-dev xz-utils
 
 echo "==== Pyenv install 3.12 ..."
-sudo /opt/pyenv/bin/pyenv install 3.12.4
+sudo PYENV_ROOT=/opt/pyenv /opt/pyenv/bin/pyenv install 3.12.4
 echo "==== Pyenv global 3.12.4 ..."
-sudo /opt/pyenv/bin/pyenv global 3.12.4
+sudo PYENV_ROOT=/opt/pyenv /opt/pyenv/bin/pyenv global 3.12.4
 echo "==== Pyenv rehash ..."
-sudo /opt/pyenv/bin/pyenv rehash
+sudo PYENV_ROOT=/opt/pyenv /opt/pyenv/bin/pyenv rehash
