@@ -5,8 +5,8 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 # UEFI firmware environment.
-sudo DEBIAN_FRONTEND=noninteractive apt-get update
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ovmf
+#sudo DEBIAN_FRONTEND=noninteractive apt-get update
+#sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ovmf
 
 # Enable access to KVM
 # We want to add the default user to the kvm group.

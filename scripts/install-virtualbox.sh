@@ -7,10 +7,10 @@ export DEBIAN_FRONTEND=noninteractive
 # Debian 12:
 FASTTRACK_KEYRING="/etc/apt/trusted.gpg.d/fasttrack-archive-keyring.gpg"
 
-echo "==== apt-get update ..."
-sudo DEBIAN_FRONTEND=noninteractive apt-get update
-echo "==== Download and setup Fasttrack trusted registry key ..."
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -u fasttrack-archive-keyring
+#echo "==== apt-get update ..."
+#sudo DEBIAN_FRONTEND=noninteractive apt-get update
+#echo "==== Download and setup Fasttrack trusted registry key ..."
+#sudo DEBIAN_FRONTEND=noninteractive apt-get install -u fasttrack-archive-keyring
 sudo ls -la /etc/apt/trusted.gpg.d/
 echo "==== Record Fasttrack Debian package registry ..."
 echo "Types: deb

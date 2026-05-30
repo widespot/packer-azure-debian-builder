@@ -27,7 +27,13 @@ packer build --var-file ./variables.pkrvars.hcl ./packer-azure-debian-builder
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| <a name="input_packages"></a> [packages](#input\_packages) | APT packages to install in the custom runner image. | `list(string)` | <pre>[<br/>  "build-essential",<br/>  "ca-certificates",<br/>  "curl",<br/>  "git",<br/>  "jq",<br/>  "make",<br/>  "gcc",<br/>  "python3",<br/>  "python3-pip",<br/>  "python3-cryptography",<br/>  "unzip",<br/>  "zip",<br/>  "xorriso",<br/>  "qemu-kvm",<br/>  "qemu-utils",<br/>  "libvirt-daemon-system",<br/>  "libvirt-clients"<br/>]</pre> | no |
+| <a name="input_enable_azcli"></a> [enable\_azcli](#input\_enable\_azcli) | Enable Azure CLI installation. | `bool` | `true` | no |
+| <a name="input_enable_docker"></a> [enable\_docker](#input\_enable\_docker) | Enable Docker installation. | `bool` | `true` | no |
+| <a name="input_enable_packer"></a> [enable\_packer](#input\_enable\_packer) | Enable Packer installation. | `bool` | `true` | no |
+| <a name="input_enable_pyenv"></a> [enable\_pyenv](#input\_enable\_pyenv) | Enable pyenv installation. | `bool` | `true` | no |
+| <a name="input_enable_qemu"></a> [enable\_qemu](#input\_enable\_qemu) | Enable QEMU installation. | `bool` | `true` | no |
+| <a name="input_enable_virtualbox"></a> [enable\_virtualbox](#input\_enable\_virtualbox) | Enable VirtualBox installation. | `bool` | `true` | no |
+| <a name="input_packages"></a> [packages](#input\_packages) | APT packages to install in the custom runner image. | `list(string)` | <pre>[<br/>  "build-essential",<br/>  "ca-certificates",<br/>  "curl",<br/>  "git",<br/>  "jq",<br/>  "make",<br/>  "gcc",<br/>  "python3",<br/>  "python3-pip",<br/>  "python3-cryptography",<br/>  "unzip",<br/>  "zip",<br/>  "xorriso",<br/>  "libvirt-daemon-system",<br/>  "libvirt-clients"<br/>]</pre> | no |
 | <a name="input_resource_group_location"></a> [resource\_group\_location](#input\_resource\_group\_location) | Azure region. | `string` | `"westeurope"` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Resource group where the resulting managed image is created. | `string` | n/a | yes |
 | <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | Azure subscription ID used by Packer. | `string` | n/a | yes |
