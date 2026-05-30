@@ -36,7 +36,9 @@ build {
       "DEBIAN_FRONTEND=noninteractive",
     ]
     scripts = [
+      "${path.root}/scripts/utils-fix-locale.sh",
       "${path.root}/scripts/install-azdo-sudo.sh",
+      "${path.root}/scripts/install-pyenv.sh",
       "${path.root}/scripts/install-docker.sh",
       "${path.root}/scripts/install-packer.sh",
       "${path.root}/scripts/install-qemu.sh",
