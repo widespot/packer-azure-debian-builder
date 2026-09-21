@@ -44,11 +44,44 @@ variable "packages" {
     "zip",
     # Build .iso files
     "xorriso",
-    # Qemu
-    "qemu-kvm",
-    "qemu-utils",
     # Virtualization helpers
     "libvirt-daemon-system",
     "libvirt-clients",
   ]
+}
+
+variable "enable_pyenv" {
+  type        = bool
+  description = "Enable pyenv installation."
+  default     = true
+}
+
+variable "enable_docker" {
+  type        = bool
+  description = "Enable Docker installation."
+  default     = true
+}
+
+variable "enable_packer" {
+  type        = bool
+  description = "Enable Packer installation."
+  default     = true
+}
+
+variable "enable_qemu" {
+  type        = bool
+  description = "Enable QEMU installation."
+  default     = true
+}
+
+variable "enable_azcli" {
+  type        = bool
+  description = "Enable Azure CLI installation."
+  default     = true
+}
+
+variable "enable_virtualbox" {
+  type        = bool
+  description = "Enable VirtualBox installation."
+  default     = true
 }

@@ -62,11 +62,11 @@ export PYENV_ROOT=/opt/pyenv
 export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 pyenv --version
 
-sudo apt-get update
-sudo apt-get install -y \
-  build-essential curl ca-certificates \
-  libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
-  libsqlite3-dev libffi-dev liblzma-dev xz-utils
+#sudo apt-get update
+#sudo apt-get install -y \
+#  build-essential curl ca-certificates \
+#  libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
+#  libsqlite3-dev libffi-dev liblzma-dev xz-utils
 
 echo "==== Pyenv install 3.12 ..."
 sudo PYENV_ROOT=/opt/pyenv /opt/pyenv/bin/pyenv install 3.12.4

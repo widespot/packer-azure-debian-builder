@@ -19,13 +19,84 @@ source "azure-arm" "debian" {
   }
 }
 
+locals {
+  azcli_packages = [
+    "apt-transport-https",
+    "ca-certificates",
+    "curl",
+    "gnupg",
+    "lsb-release",
+#    "azure-cli",
+  ]
+
+  docker_packages = [
+    "ca-certificates",
+    "curl",
+    "gnupg",
+#    "docker-ce",
+#    "docker-ce-cli",
+#    "containerd.io",
+#    "docker-buildx-plugin",
+#    "docker-compose-plugin",
+  ]
+
+  packer_packages = []
+
+  pyenv_packages = [
+    "build-essential",
+    "curl",
+    "ca-certificates",
+    "libssl-dev",
+    "zlib1g-dev",
+    "libbz2-dev",
+    "libreadline-dev",
+    "libsqlite3-dev",
+    "libffi-dev",
+    "liblzma-dev",
+    "xz-utils",
+  ]
+
+  qemu_packages = [
+    "ovmf",
+    "qemu-kvm",
+    "qemu-utils",
+  ]
+
+  virtualbox_packages = [
+    "fasttrack-archive-keyring",
+    "linux-headers-cloud-amd64",
+#    "virtualbox-dkms",
+#    "virtualbox",
+  ]
+
+  enabled_feature_packages = distinct(concat(
+    var.enable_azcli ? local.azcli_packages : [],
+    var.enable_docker ? local.docker_packages : [],
+    var.enable_packer ? local.packer_packages : [],
+    var.enable_pyenv ? local.pyenv_packages : [],
+    var.enable_qemu ? local.qemu_packages : [],
+    var.enable_virtualbox ? local.virtualbox_packages : [],
+  ))
+
+  install_packages = distinct(concat(var.packages, local.enabled_feature_packages))
+
+  feature_scripts = concat(
+    var.enable_azcli ? ["${path.root}/scripts/install-azcli.sh"] : [],
+    var.enable_docker ? ["${path.root}/scripts/install-docker.sh"] : [],
+    var.enable_packer ? ["${path.root}/scripts/install-packer.sh"] : [],
+    var.enable_pyenv ? ["${path.root}/scripts/install-pyenv.sh"] : [],
+    var.enable_qemu ? ["${path.root}/scripts/install-qemu.sh"] : [],
+    var.enable_virtualbox ? ["${path.root}/scripts/install-virtualbox.sh"] : [],
+  )
+}
+
 build {
   name = "azdo-debian-runner"
   sources = ["source.azure-arm.debian"]
 
   provisioner "shell" {
     environment_vars = [
-      "PACKAGES=${join(" ", var.packages)}",
+      "PACKAGES=${join(" ", local.install_packages)}",
       "DEBIAN_FRONTEND=noninteractive",
     ]
     script = "${path.root}/scripts/install-packages.sh"
@@ -35,16 +106,11 @@ build {
     environment_vars = [
       "DEBIAN_FRONTEND=noninteractive",
     ]
-    scripts = [
-      "${path.root}/scripts/utils-fix-locale.sh",
-      "${path.root}/scripts/install-azdo-sudo.sh",
-      "${path.root}/scripts/install-pyenv.sh",
-      "${path.root}/scripts/install-docker.sh",
-      "${path.root}/scripts/install-packer.sh",
-      "${path.root}/scripts/install-qemu.sh",
-      "${path.root}/scripts/install-azcli.sh",
-      "${path.root}/scripts/install-virtualbox.sh",
-    ]
+    scripts = concat(
+      ["${path.root}/scripts/utils-fix-locale.sh"],
+      ["${path.root}/scripts/utils-azdo-sudo.sh"],
+      local.feature_scripts,
+    )
   }
 
   provisioner "shell" {
