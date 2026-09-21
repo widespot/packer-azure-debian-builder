@@ -107,6 +107,14 @@ locals {
       template  = null
     },
     {
+      enabled   = var.enable_nvm
+      script    = "${path.root}/scripts/install-nvm.sh"
+      template  = {
+        nvm_version = var.nvm_version
+        nvm_node_version = var.nvm_node_version
+      }
+    },
+    {
       enabled   = var.enable_pyenv
       script    = "${path.root}/scripts/install-pyenv.sh"
       template  = {
