@@ -82,45 +82,47 @@ locals {
 
   features = [
     {
-      enabled = true
-      script  = file("${path.root}/scripts/utils-fix-locale.sh")
+      enabled   = true
+      script    = "${path.root}/scripts/utils-fix-locale.sh"
+      template  = null
     },
     {
-      enabled = true
-      script  = file("${path.root}/scripts/utils-azdo-sudo.sh")
+      enabled   = true
+      script    = "${path.root}/scripts/utils-azdo-sudo.sh"
+      template  = null
     },
     {
-      enabled = var.enable_azcli
-      script  = file("${path.root}/scripts/install-azcli.sh")
+      enabled   = var.enable_azcli
+      script    = "${path.root}/scripts/install-azcli.sh"
+      template  = null
     },
     {
-      enabled = var.enable_docker
-      script  = file("${path.root}/scripts/install-docker.sh")
+      enabled   = var.enable_docker
+      script    = "${path.root}/scripts/install-docker.sh"
+      template  = null
     },
     {
-      enabled = var.enable_packer
-      script  = file("${path.root}/scripts/install-packer.sh")
+      enabled   = var.enable_packer
+      script    = "${path.root}/scripts/install-packer.sh"
+      template  = null
     },
     {
-      enabled = var.enable_pyenv
-      script  = templatefile("${path.root}/scripts/install-pyenv.sh", {
+      enabled   = var.enable_pyenv
+      script    = "${path.root}/scripts/install-pyenv.sh"
+      template  = {
         python_version = var.pyenv_python_version
-      })
+      }
     },
     {
-      enabled = var.enable_qemu
-      script  = file("${path.root}/scripts/install-qemu.sh")
+      enabled   = var.enable_qemu
+      script    = "${path.root}/scripts/install-qemu.sh"
+      template  = null
     },
     {
-      enabled = var.enable_virtualbox
-      script  = file("${path.root}/scripts/install-virtualbox.sh")
+      enabled   = var.enable_virtualbox
+      script    = "${path.root}/scripts/install-virtualbox.sh"
+      template  = null
     },
-  ]
-
-  feature_scripts = [
-    for feature in local.features :
-    script
-    if feature.enabled
   ]
 }
 
@@ -136,11 +138,32 @@ build {
     script = "${path.root}/scripts/install-packages.sh"
   }
 
-  provisioner "shell" {
-    environment_vars = [
-      "DEBIAN_FRONTEND=noninteractive",
-    ]
-    inline = local.feature_scripts
+  dynamic "provisioner" {
+    for_each = {for feature in local.features:
+      feature.script => feature.template == null ?
+        file(feature.script) : templatefile(feature.script, feature.template)
+      if feature.enabled
+    }
+
+    labels = ["file"]
+
+    content {
+      content = provisioner.value
+      destination = "/tmp/${basename(provisioner.key)}"
+    }
+  }
+
+  dynamic "provisioner" {
+    for_each = local.features
+
+    labels = ["shell"]
+
+    content {
+      inline = [
+        "chmod +x /tmp/${basename(provisioner.value.script)}",
+        "/tmp/${basename(provisioner.value.script)}",
+      ]
+    }
   }
 
   provisioner "shell" {
