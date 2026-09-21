@@ -91,3 +91,21 @@ variable "enable_virtualbox" {
   description = "Enable VirtualBox installation."
   default     = true
 }
+
+variable "enable_nvm" {
+  type        = bool
+  description = "Enable NVM installation."
+  default     = true
+}
+
+variable "nvm_version" {
+  type        = string
+  default     = "v0.40.8"
+  description = "See https://github.com/nvm-sh/nvm/tags"
+}
+
+variable "nvm_node_version" {
+  type        = string
+  default     = "26"
+  description = ""
+}
