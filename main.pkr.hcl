@@ -80,14 +80,48 @@ locals {
 
   install_packages = distinct(concat(var.packages, local.enabled_feature_packages))
 
-  feature_scripts = concat(
-    var.enable_azcli ? ["${path.root}/scripts/install-azcli.sh"] : [],
-    var.enable_docker ? ["${path.root}/scripts/install-docker.sh"] : [],
-    var.enable_packer ? ["${path.root}/scripts/install-packer.sh"] : [],
-    var.enable_pyenv ? ["${path.root}/scripts/install-pyenv.sh"] : [],
-    var.enable_qemu ? ["${path.root}/scripts/install-qemu.sh"] : [],
-    var.enable_virtualbox ? ["${path.root}/scripts/install-virtualbox.sh"] : [],
-  )
+  features = [
+    {
+      enabled = true
+      script  = file("${path.root}/scripts/utils-fix-locale.sh")
+    },
+    {
+      enabled = true
+      script  = file("${path.root}/scripts/utils-azdo-sudo.sh")
+    },
+    {
+      enabled = var.enable_azcli
+      script  = file("${path.root}/scripts/install-azcli.sh")
+    },
+    {
+      enabled = var.enable_docker
+      script  = file("${path.root}/scripts/install-docker.sh")
+    },
+    {
+      enabled = var.enable_packer
+      script  = file("${path.root}/scripts/install-packer.sh")
+    },
+    {
+      enabled = var.enable_pyenv
+      script  = templatefile("${path.root}/scripts/install-pyenv.sh", {
+        python_version = var.pyenv_python_version
+      })
+    },
+    {
+      enabled = var.enable_qemu
+      script  = file("${path.root}/scripts/install-qemu.sh")
+    },
+    {
+      enabled = var.enable_virtualbox
+      script  = file("${path.root}/scripts/install-virtualbox.sh")
+    },
+  ]
+
+  feature_scripts = [
+    for feature in local.features :
+    script
+    if feature.enabled
+  ]
 }
 
 build {
@@ -106,11 +140,7 @@ build {
     environment_vars = [
       "DEBIAN_FRONTEND=noninteractive",
     ]
-    scripts = concat(
-      ["${path.root}/scripts/utils-fix-locale.sh"],
-      ["${path.root}/scripts/utils-azdo-sudo.sh"],
-      local.feature_scripts,
-    )
+    inline = local.feature_scripts
   }
 
   provisioner "shell" {

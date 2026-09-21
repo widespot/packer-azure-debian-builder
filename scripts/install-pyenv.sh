@@ -68,9 +68,9 @@ pyenv --version
 #  libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
 #  libsqlite3-dev libffi-dev liblzma-dev xz-utils
 
-echo "==== Pyenv install 3.12 ..."
-sudo PYENV_ROOT=/opt/pyenv /opt/pyenv/bin/pyenv install 3.12.4
-echo "==== Pyenv global 3.12.4 ..."
-sudo PYENV_ROOT=/opt/pyenv /opt/pyenv/bin/pyenv global 3.12.4
+echo "==== Pyenv install ${python_version} ..."
+sudo PYENV_ROOT=/opt/pyenv /opt/pyenv/bin/pyenv install ${python_version}
+echo "==== Pyenv global ${python_version} ..."
+sudo PYENV_ROOT=/opt/pyenv /opt/pyenv/bin/pyenv global ${python_version}
 echo "==== Pyenv rehash ..."
 sudo PYENV_ROOT=/opt/pyenv /opt/pyenv/bin/pyenv rehash

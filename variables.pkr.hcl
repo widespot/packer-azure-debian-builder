@@ -56,6 +56,12 @@ variable "enable_pyenv" {
   default     = true
 }
 
+variable "pyenv_python_version" {
+  type        = string
+  default     = "3.12.4"
+  description = "Version of Python to install and enable globally when PyEnv is enabled"
+}
+
 variable "enable_docker" {
   type        = bool
   description = "Enable Docker installation."
